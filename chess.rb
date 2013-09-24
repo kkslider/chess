@@ -9,10 +9,10 @@ class Board
   end
 
 
+
+
   def setup
-    pawn = Pawn.new(self, :black)
-    pawn.position = [1, 0]
-    @state[1][0] = pawn
+
   end
 
   def to_s
@@ -26,6 +26,7 @@ class Board
         end
       end
 
+
       puts
     end
   end
@@ -38,3 +39,6 @@ end
 
 class Game
 end
+
+board = Board.new
+print board

@@ -1,4 +1,47 @@
-require './chess.rb'
+# require './chess.rb'
+
+module SlidingPiece
+  def valid_moves
+    valid_moves = []
+    self.direction.each do |direction|
+      (1..8).each do |multiplier|
+        x = position[0] + (direction[0] * multiplier)
+        y = position[1] + (direction[1] * multiplier)
+
+        next if out_of_bounds?([x, y])
+
+        unless reached_piece?([x, y])
+          valid_moves << [x, y]
+        else
+          valid_moves << [x, y] if @board.state[x][y].color == opp_color
+          break
+        end
+      end
+    end
+
+    valid_moves
+  end
+end
+
+module SteppingPiece
+  def valid_moves
+    valid_moves = []
+    self.direction.each do |direction|
+      x = position[0] + direction[0]
+      y = position[1] + direction[1]
+      next if out_of_bounds?([x, y])
+
+      unless reached_piece?([x, y])
+        valid_moves << [x, y]
+      else
+        valid_moves << [x, y] if @board.state[x][y].color == opp_color
+      end
+    end
+
+    valid_moves
+  end
+end
+
 
 class Piece
   attr_accessor :color, :position, :direction, :board
@@ -6,26 +49,34 @@ class Piece
   def initialize(board, color)
     @board = board
     @color = color
+    @direction = get_direction
+  end
+
+  def opp_color
+    self.color == :black ? :white : :black
   end
 
   def out_of_bounds?(move) #[2, 0]
     x = move[0]
     y = move[1]
     board_size = @board.state[0].length
-    return true if (x < 0 || x >= board_size) || (y < 0 || y >= board_size)
-    false
+    (x < 0 || x >= board_size) || (y < 0 || y >= board_size)
   end
+
+  def reached_piece?(move)
+    x = move[0]
+    y = move[1]
+    !!@board.state[x][y]
+  end
+
 end
 
 class Pawn < Piece
+
   def initialize(board, color)
     super(board, color)
     @direction = get_direction
     @initial_move = true
-  end
-
-  def opp_color
-    self.color == :black ? :white : :black
   end
 
   def get_direction
@@ -44,10 +95,8 @@ class Pawn < Piece
     end
   end
 
-
   def capture_move
     if @color == :black
-      # if board[@position[0]+1, @position[1]-1]
       directions = [[1, -1], [1, 1]]
     else @color == :white
       directions = [[-1, -1], [-1, 1]]
@@ -69,25 +118,11 @@ class Pawn < Piece
     potential_captures # 2D array of potential capture spots, else empty array
   end
 
-
-
-  # def out_of_bounds?(move) #[2, 0]
-  #   x = move[0]
-  #   y = move[1]
-  #   board_size = @board.state[0].length
-  #   return true if (x < 0 || x >= board_size) || (y < 0 || y >= board_size)
-  #   false
-  # end
-
   def valid_normal_move?(move)
     return false if out_of_bounds?(move)
     x = move[0]
     y = move[1]
-    if @board.state[x][y]
-      false
-    else
-      true
-    end
+    !@board.state[x][y]
   end
 
   def valid_moves
@@ -111,34 +146,107 @@ class Pawn < Piece
   end
 
   def to_s
-    "  P  "
+    if @color == :white
+      "  \u2659  "
+    else
+      "  \u265F  "
+    end
   end
 end
 
 class Rook < Piece
-
-  def initialize(board, color)
-    super(board, color)
-    @direction = get_direction
-  end
+  include SlidingPiece
 
   def get_direction
-    [[-1, 0], [0, 1], [1, 0], [0, -1]]
+    [[1, 0], [0, 1], [0, -1], [-1, 0]]
   end
 
-
-
-
+  def to_s
+    if @color == :white
+      "  \u2656  "
+    else
+      "  \u265C  "
+    end
+  end
 end
 
 class Knight < Piece
+  include SteppingPiece
+
+  def get_direction
+    [[1, 2], [1, -2], [-1, 2], [-1, -2], [2, 1], [2, -1], [-2, 1], [-2, -1]]
+  end
+
+  # def valid_moves
+  #   valid_moves = []
+  #   self.direction.each do |direction|
+  #     x = position[0] + direction[0]
+  #     y = position[1] + direction[1]
+  #     next if out_of_bounds?([x, y])
+  #
+  #     unless reached_piece?([x, y])
+  #       valid_moves << [x, y]
+  #     else
+  #       valid_moves << [x, y] if @board.state[x][y].color == opp_color
+  #     end
+  #   end
+  #
+  #   valid_moves
+  # end
+
+  def to_s
+    if @color == :white
+      "  \u2658  "
+    else
+      "  \u265E  "
+    end
+  end
 end
 
 class Bishop < Piece
+  include SlidingPiece
+
+  def get_direction
+    [[-1, -1], [-1, 1], [1, 1], [1, -1]]
+  end
+
+  def to_s
+    if @color == :white
+      "  \u2657  "
+    else
+      "  \u265D  "
+    end
+  end
 end
 
 class Queen < Piece
+  include SlidingPiece
+
+  def get_direction
+    [[1, 0], [0, 1], [0, -1], [-1, 0], [-1, -1], [-1, 1], [1, 1], [1, -1]]
+  end
+
+  def to_s
+    if @color == :white
+      "  \u2655  "
+    else
+      "  \u265B  "
+    end
+  end
 end
 
 class King < Piece
+  include SteppingPiece
+
+  def get_direction
+    [[1, 0], [0, 1], [0, -1], [-1, 0], [-1, -1], [-1, 1], [1, 1], [1, -1]]
+  end
+
+  def to_s
+    if @color == :white
+      "  \u2654  "
+    else
+      "  \u265A  "
+    end
+  end
 end
