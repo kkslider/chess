@@ -1,8 +1,5 @@
 require './chess_piece.rb'
 require 'yaml'
-#
-# class ImproperPieceError < StandardError
-# end
 
 class Board
   attr_accessor :state
@@ -29,19 +26,14 @@ class Board
 
   def setup_black_pieces
     setup_pawns(BLACK_ROW_PAWNS)
-    # @state[0][0] = Rook.new(self, :black, [0, 0])
+    @state[0][0] = Rook.new(self, :black, [0, 0])
     @state[0][1] = Knight.new(self, :black, [0, 1])
     @state[0][2] = Bishop.new(self, :black, [0, 2])
-    # @state[0][3] = Queen.new(self, :black, [0, 3])
+    @state[0][3] = Queen.new(self, :black, [0, 3])
     @state[0][4] = King.new(self, :black, [0, 4])
     @state[0][5] = Bishop.new(self, :black, [0, 5])
     @state[0][6] = Knight.new(self, :black, [0, 6])
-    # @state[0][7] = Rook.new(self, :black, [0, 7])
-
-
-    @state[4][1] = Rook.new(self, :black, [4, 1])
-    @state[2][1] = Rook.new(self, :black, [2, 1])
-    @state[2][0] = Queen.new(self, :black, [2, 0])
+    @state[0][7] = Rook.new(self, :black, [0, 7])
   end
 
   def setup_white_pieces
@@ -50,12 +42,10 @@ class Board
     @state[7][1] = Knight.new(self, :white, [7, 1])
     @state[7][2] = Bishop.new(self, :white, [7, 2])
     @state[7][3] = Queen.new(self, :white, [7, 3])
-    # @state[7][4] = King.new(self, :white, [7, 4])
+    @state[7][4] = King.new(self, :white, [7, 4])
     @state[7][5] = Bishop.new(self, :white, [7, 5])
     @state[7][6] = Knight.new(self, :white, [7, 6])
     @state[7][7] = Rook.new(self, :white, [7, 7])
-
-    @state[3][3] = King.new(self, :white, [3, 3])
   end
 
 
@@ -98,68 +88,13 @@ class Board
         piece.initial_move = false
       end
 
-      # print self
     rescue => e
       puts "Please enter valid coordinates."
       retry
     end
   end
 
-  # def move(start, end)
-  #   if board.checked?(@current_player.color)
-  #     # for each piece, check each valid move, and if all the valid moves result in checked, you are in checkmate
-  #
-  #     puts "YO KING IS IN CHECK!! DO SUMTHIN"
-  #   end
-  #
-  #   valid_move = false
-  #   until valid_move
-  #     begin
-  #       puts "#{current_player}, your turn. Enter position of the piece you " +
-  #       "would like to move. e.g. '1 2' for position at row 2, column 3"
-  #
-  #       move_from = gets.chomp.split.map(&:to_i) #[1, 2]
-  #       piece = board.state[move_from[0]][move_from[1]]
-  #     rescue
-  #       puts "please re-enter"
-  #       retry
-  #     end
-  #     next if !piece || piece.color != @current_player.color
-  #
-  #     begin
-  #       puts "#{current_player}, Enter the position you would like to move " +
-  #       "the #{piece.class}."
-  #
-  #       move_to = gets.chomp.split.map(&:to_i)
-  #
-  #       if piece.valid_moves.include?(move_to)
-  #         piece.position = move_to
-  #         board.state[move_to[0]][move_to[1]] = piece
-  #         board.state[move_from[0]][move_from[1]] = nil
-  #
-  #         if piece.class == Pawn
-  #           piece.initial_move = false
-  #         end
-  #
-  #         if board.checked?(@current_player.color)
-  #           puts "YOU MADE A BAAAAAD MOVE SON"
-  #           board = YAML::load(serialized_board)
-  #           next
-  #         end
-  #
-  #         print board
-  #       else
-  #         next
-  #       end
-  #     rescue
-  #       puts "please re-enter"
-  #       retry
-  #     end
-  #   end
-
-
-
-  def checked?(color) # :white
+  def checked?(color)
     player_king = nil
     opp_color = (color == :white) ? :black : :white
 
