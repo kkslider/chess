@@ -48,8 +48,59 @@ class Board
     @state[7][7] = Rook.new(self, :white, [7, 7])
   end
 
-  def move
-  end
+  # def move(start, end)
+  #   if board.checked?(@current_player.color)
+  #     # for each piece, check each valid move, and if all the valid moves result in checked, you are in checkmate
+  #
+  #     puts "YO KING IS IN CHECK!! DO SUMTHIN"
+  #   end
+  #
+  #   valid_move = false
+  #   until valid_move
+  #     begin
+  #       puts "#{current_player}, your turn. Enter position of the piece you " +
+  #       "would like to move. e.g. '1 2' for position at row 2, column 3"
+  #
+  #       move_from = gets.chomp.split.map(&:to_i) #[1, 2]
+  #       piece = board.state[move_from[0]][move_from[1]]
+  #     rescue
+  #       puts "please re-enter"
+  #       retry
+  #     end
+  #     next if !piece || piece.color != @current_player.color
+  #
+  #     begin
+  #       puts "#{current_player}, Enter the position you would like to move " +
+  #       "the #{piece.class}."
+  #
+  #       move_to = gets.chomp.split.map(&:to_i)
+  #
+  #       if piece.valid_moves.include?(move_to)
+  #         piece.position = move_to
+  #         board.state[move_to[0]][move_to[1]] = piece
+  #         board.state[move_from[0]][move_from[1]] = nil
+  #
+  #         if piece.class == Pawn
+  #           piece.initial_move = false
+  #         end
+  #
+  #         if board.checked?(@current_player.color)
+  #           puts "YOU MADE A BAAAAAD MOVE SON"
+  #           board = YAML::load(serialized_board)
+  #           next
+  #         end
+  #
+  #         print board
+  #       else
+  #         next
+  #       end
+  #     rescue
+  #       puts "please re-enter"
+  #       retry
+  #     end
+  #   end
+
+
 
   def checked?(color) # :white
     player_king = nil
@@ -83,6 +134,44 @@ class Board
     false
   end
 
+  def checkmate?(color)
+    # opp_color = (color == :white) ? :black : :white
+    # serialized_board = self.to_yaml
+    serialized_board = self.to_yaml
+    temp_board = YAML::load(serialized_board)
+
+    temp_board.state.each_with_index do |row, r_index|
+      row.each_with_index do |column, c_index|
+        piece = temp_board.state[r_index][c_index]
+        # serialized_board = self.to_yaml
+
+        if piece && piece.color == color
+          piece.valid_moves.each do |valid_move|
+            #check if valid_move results in check
+            current_x, current_y = piece.position[0], piece.position[1]
+            new_x, new_y = valid_move[0], valid_move[1]
+            temp_board.state[current_x][current_y] = nil
+            temp_board.state[new_x][new_y] = piece
+
+            if !temp_board.checked?(color)
+              return false
+            end
+
+
+            # serialized_board = self.to_yaml
+            temp_board = YAML::load(serialized_board)
+            # self = YAML::load(serialized_board)
+          end
+        end
+      end
+    end
+
+    true
+  end
+
+
+
+
   def to_s
     puts "   0  1  2  3  4  5  6  7  "
     @state.each_with_index do |row, index_r|
@@ -111,9 +200,15 @@ class HumanPlayer
     @color = color
   end
 
+  def opponent
+    self.color == :white ? "Player 2 (B)" : "Player 1 (W)"
+  end
+
   def to_s
     @color == :white ? "Player 1 (W)" : "Player 2 (B)"
   end
+
+
 end
 
 class ChessGame
@@ -137,7 +232,15 @@ class ChessGame
     until game_over
       serialized_board = board.to_yaml
 
+      # board.move
+
       if board.checked?(@current_player.color)
+        # for each piece, check each valid move, and if all the valid moves result in checked, you are in checkmate
+        if board.checkmate?(@current_player.color)
+          game_over = true
+          next
+        end
+
         puts "YO KING IS IN CHECK!! DO SUMTHIN"
       end
 
@@ -185,13 +288,9 @@ class ChessGame
 
       @current_player = (@current_player == player_1) ? player_2 : player_1
     end
+
+    puts "CHECKMATE! #{@current_player.opponent} HAS WON THE GAME!!"
+    puts "#{@current_player}, BETTER LUCK NEXT TIME!!"
   end
 
 end
-#
-# game = ChessGame.new
-# game.play
-
-#
-# board = Board.new
-# print board
