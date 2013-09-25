@@ -1,4 +1,3 @@
-# require './chess.rb'
 
 module SlidingPiece
   def valid_moves
@@ -46,9 +45,10 @@ end
 class Piece
   attr_accessor :color, :position, :direction, :board
 
-  def initialize(board, color)
+  def initialize(board, color, position)
     @board = board
     @color = color
+    @position = position
     @direction = get_direction
   end
 
@@ -72,10 +72,12 @@ class Piece
 end
 
 class Pawn < Piece
+  attr_accessor :initial_move
 
-  def initialize(board, color)
-    super(board, color)
+  def initialize(board, color, position)
+    super(board, color, position)
     @direction = get_direction
+    # @position = position
     @initial_move = true
   end
 
@@ -147,9 +149,9 @@ class Pawn < Piece
 
   def to_s
     if @color == :white
-      "  \u2659  "
+      " \u2659 "
     else
-      "  \u265F  "
+      " \u265F "
     end
   end
 end
@@ -163,9 +165,9 @@ class Rook < Piece
 
   def to_s
     if @color == :white
-      "  \u2656  "
+      " \u2656 "
     else
-      "  \u265C  "
+      " \u265C "
     end
   end
 end
@@ -177,28 +179,11 @@ class Knight < Piece
     [[1, 2], [1, -2], [-1, 2], [-1, -2], [2, 1], [2, -1], [-2, 1], [-2, -1]]
   end
 
-  # def valid_moves
-  #   valid_moves = []
-  #   self.direction.each do |direction|
-  #     x = position[0] + direction[0]
-  #     y = position[1] + direction[1]
-  #     next if out_of_bounds?([x, y])
-  #
-  #     unless reached_piece?([x, y])
-  #       valid_moves << [x, y]
-  #     else
-  #       valid_moves << [x, y] if @board.state[x][y].color == opp_color
-  #     end
-  #   end
-  #
-  #   valid_moves
-  # end
-
   def to_s
     if @color == :white
-      "  \u2658  "
+      " \u2658 "
     else
-      "  \u265E  "
+      " \u265E "
     end
   end
 end
@@ -212,9 +197,9 @@ class Bishop < Piece
 
   def to_s
     if @color == :white
-      "  \u2657  "
+      " \u2657 "
     else
-      "  \u265D  "
+      " \u265D "
     end
   end
 end
@@ -228,9 +213,9 @@ class Queen < Piece
 
   def to_s
     if @color == :white
-      "  \u2655  "
+      " \u2655 "
     else
-      "  \u265B  "
+      " \u265B "
     end
   end
 end
@@ -244,9 +229,9 @@ class King < Piece
 
   def to_s
     if @color == :white
-      "  \u2654  "
+      " \u2654 "
     else
-      "  \u265A  "
+      " \u265A "
     end
   end
 end
