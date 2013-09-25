@@ -104,27 +104,35 @@ class ChessGame
 
       puts "#{current_player}, your turn. Enter position of the piece you " +
         "would like to move. e.g. '1 2' for position at row 2, column 3"
-
-      move_from = gets.chomp.split.map(&:to_i) #[1, 2]
-      piece = board.state[move_from[0]][move_from[1]]
-
+      begin
+        move_from = gets.chomp.split.map(&:to_i) #[1, 2]
+        piece = board.state[move_from[0]][move_from[1]]
+      rescue IndexError
+        puts "please re-enter"
+        retry
+      end
       next if !piece || piece.color != @current_player.color
 
       puts "#{current_player}, Enter the position you would like to move " +
       "the #{piece.class}."
+      begin
+        move_to = gets.chomp.split.map(&:to_i)
 
-      move_to = gets.chomp.split.map(&:to_i)
-      if piece.valid_moves.include?(move_to)
-        piece.position = move_to
-        board.state[move_to[0]][move_to[1]] = piece
-        board.state[move_from[0]][move_from[1]] = nil
+        if piece.valid_moves.include?(move_to)
+          piece.position = move_to
+          board.state[move_to[0]][move_to[1]] = piece
+          board.state[move_from[0]][move_from[1]] = nil
 
-        if piece.class == Pawn
-          piece.initial_move = false
+          if piece.class == Pawn
+            piece.initial_move = false
+          end
+          print board
+        else
+          next
         end
-        print board
-      else
-        next
+      rescue IndexError
+        puts "please re-enter"
+        retry
       end
 
       @current_player = (@current_player == player_1) ? player_2 : player_1
