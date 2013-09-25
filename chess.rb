@@ -1,4 +1,5 @@
 require './chess_piece.rb'
+require 'yaml'
 
 class Board
   attr_accessor :state
@@ -47,6 +48,40 @@ class Board
     @state[7][7] = Rook.new(self, :white, [7, 7])
   end
 
+  def move
+  end
+
+  def checked?(color) # :white
+    player_king = nil
+    opp_color = (color == :white) ? :black : :white
+
+    @state.each_with_index do |row, r_index|
+      row.each_with_index do |column, c_index|
+        piece = @state[r_index][c_index]
+        if piece.class == King && piece.color == color
+          player_king = piece
+          break
+        end
+      end
+
+      break if player_king
+    end
+
+    scan_opp_pieces_for_check(opp_color, player_king.position)
+  end
+
+  def scan_opp_pieces_for_check(color, king_position)
+    @state.each_with_index do |row, r_index|
+      row.each_with_index do |column, c_index|
+        piece = @state[r_index][c_index]
+        if piece && piece.color == color
+          return true if piece.valid_moves.include?(king_position)
+        end
+      end
+    end
+
+    false
+  end
 
   def to_s
     puts "   0  1  2  3  4  5  6  7  "
@@ -100,22 +135,28 @@ class ChessGame
     game_over = false
     @current_player = player_1
     until game_over
+      serialized_board = board.to_yaml
 
+      if board.checked?(@current_player.color)
+        puts "YO KING IS IN CHECK!! DO SUMTHIN"
+      end
 
+      begin
       puts "#{current_player}, your turn. Enter position of the piece you " +
         "would like to move. e.g. '1 2' for position at row 2, column 3"
-      begin
+
         move_from = gets.chomp.split.map(&:to_i) #[1, 2]
         piece = board.state[move_from[0]][move_from[1]]
-      rescue IndexError
+      rescue
         puts "please re-enter"
         retry
       end
       next if !piece || piece.color != @current_player.color
 
+      begin
       puts "#{current_player}, Enter the position you would like to move " +
       "the #{piece.class}."
-      begin
+
         move_to = gets.chomp.split.map(&:to_i)
 
         if piece.valid_moves.include?(move_to)
@@ -126,11 +167,18 @@ class ChessGame
           if piece.class == Pawn
             piece.initial_move = false
           end
+
+          if board.checked?(@current_player.color)
+            puts "YOU MADE A BAAAAAD MOVE SON"
+            board = YAML::load(serialized_board)
+            next
+          end
+
           print board
         else
           next
         end
-      rescue IndexError
+      rescue
         puts "please re-enter"
         retry
       end
@@ -140,9 +188,9 @@ class ChessGame
   end
 
 end
-
-game = ChessGame.new
-game.play
+#
+# game = ChessGame.new
+# game.play
 
 #
 # board = Board.new
